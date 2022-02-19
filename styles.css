@@ -1,0 +1,21 @@
+.popup {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;
+}
+
+.small-text {
+    font-size: 0.9em;
+}
+
+.join-button {
+    position: absolute !important;
+    left: 61% !important;
+    bottom: 3px !important;
+}
+
+.accept a {
+    color: #fff;
+}
