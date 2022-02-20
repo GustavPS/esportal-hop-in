@@ -1,7 +1,7 @@
 {
     "name": "Esportal Hop-in",
     "description": "Show an alert when a game is available for hop-in",
-    "version": "1.0",
+    "version": "0.0.1",
     "manifest_version": 3,
     "background": {
         "service_worker": "background.js"
@@ -16,5 +16,10 @@
         "css": ["styles.css"],
         "js": ["content.js"],
         "matches": ["https://esportal.com/*"]
-    }]
+    }],
+    "icons": {
+        "16": "images/icon_16.png",
+        "48": "images/icon_48.png",
+        "128": "images/icon_128.png"
+    }
   }
