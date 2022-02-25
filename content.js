@@ -67,6 +67,7 @@ const testData = {
     }
 }
 
+const useTestData = false;
 const games = [];
 
 const getMatchDetails = (id) => {
@@ -87,14 +88,21 @@ const getActiveGames = () => {
             .then(response => response.json())
             .then(async (data) => {
                 const availableGames = [];
-
-                for (const game of data) {
-                    if (game.slots_open !== undefined && game.slots_open !== 0 && !isMatchCurrentPage(game.id) && !games.includes(game.id)) {
-                        game.match = await getMatchDetails(game.id);
-                        availableGames.push(game);
-                        games.push(game.id);
+                if (useTestData) {
+                    if (games.length == 0) {
+                        availableGames.push(testData);
+                        games.push(testData.id);
+                    }
+                } else {
+                    for (const game of data) {
+                        if (game.slots_open !== undefined && game.slots_open !== 0 && !isMatchCurrentPage(game.id) && !games.includes(game.id)) {
+                            game.match = await getMatchDetails(game.id);
+                            availableGames.push(game);
+                            games.push(game.id);
+                        }
                     }
                 }
+                
                 if (availableGames.length > 0) {
                     console.log(availableGames);
                 }
@@ -130,28 +138,51 @@ const createPopup = (game) => {
     const popup = document.createElement('div');
     popup.classList.add('popup');
     popup.innerHTML = `
-        <div class="snackbar" id="game-${game.id}">
-            <div class="snack">
-                <div class="snack-close" id="close">
-                    <i class="fas fa-times"></i>
+        <div class="snackbar hop-in" id="game-${game.id}">
+            <div class="hop-in-snack">
+                <div class="hop-in-snack-close" id="close">
+                    <i class="far fa-times-circle"></i>
                 </div>
-                <div class="snack-friend-request-actions join-button">
-                    <span class="snack-friend-request-action accept">Gå med här</span>
-                </div>
-                <div class="snack-logo map${game.match.map_id}"></div>
-                <div class="snack-title">Jump-in available</div>
-                <div class="snack-content">
-                    <span class="small-text">
-                        Score: ${score}<br/>
-                        Game elo: ${game.elo}<br/>
-                        Team elo: ${teamElo}
-                    </span>
+                <div class="hop-in-snack-logo map${game.match.map_id}"></div>
+                <div class="hop-in-snack-body">
+                    <div class="hop-in-snack-title">Jump-in available</div>
+                    <div class="hop-in-snack-content">
+                        <span class="small-text">
+                            Score: ${score}<br/>
+                            Game elo: ${game.elo}<br/>
+                            Team elo: ${teamElo}
+                        </span>
+                    </div>
+                    <div class="hop-in-join-button">
+                        <span class="button button-new-style accept">Gå med här</span>
+                    </div>
                 </div>
             </div>
         </div>
     `;
     return popup;
 }
+/*
+<div id="snackbar">
+    <div class="snack">
+        <div class="snack-close">
+            <i class="far fa-times-circle"></i>
+        </div>
+        <div class="snack-logo">
+            <a class="table-avatar avatar circle premium" href="/sv/profile/30SlakOfficial" style="background-image: url(&quot;https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/4c/4c1b64788f893f15677e81861e00de571060e087_medium.jpg&quot;);"></a>
+        </div>
+        <div class="snack-body">
+            <div class="snack-title">Vän gick med en Gather</div>
+            <div class="snack-content">
+                <span><a href="/sv/profile/30SlakOfficial">30SlakOfficial</a> har joinat en gather.</span>
+            </div>
+            <div class="snack-friend-request-actions">
+                <span class="button button-new-style accept">Gå med här</span>
+            </div>
+        </div>
+    </div>
+</div>
+*/
 
 const createAudio = () => {
     if (document.getElementById('audioDiv') == null) {

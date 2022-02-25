@@ -10,12 +10,91 @@
     font-size: 0.9em;
 }
 
-.join-button {
-    position: absolute !important;
-    left: 61% !important;
-    bottom: 3px !important;
-}
 
 .accept a {
     color: #fff;
+}
+
+.hop-in-logo {
+    width: 110px;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hop-in-snack-title {
+    margin-bottom: 0;
+    margin-right: 20px;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.hop-in-snack-content {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #98a0ae;
+}
+
+.hop-in-snack {
+    color: #fff;
+    position: relative;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    width: 350px;
+    min-height: 80px;
+    background-color: #20212d;
+    border-radius: 4px;
+    display: flex;
+}
+
+.hop-in-snack-close {
+    position: absolute;
+    top: 10px;
+    right: 5px;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    color: #c0c6d1;
+}
+
+.hop-in-snack-body {
+    margin: 1rem;
+}
+
+.hop-in-join-button {
+    margin-top: 0.75rem;
+    display: flex;
+}
+
+.hop-in-snack-logo {
+    width: 110px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.hop-in-join-button span {
+    color: #00a9ea;
+    border-color: #00a9ea;
+    min-width: 40%;
+    background: 0 0;
+    border: 2px solid #3f4151;
+    text-align: center;
+    font-size: 12px;
+    padding: 0 15px;
+    border-radius: 4px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    text-transform: none;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 35px;
+    line-height: normal;
 }
