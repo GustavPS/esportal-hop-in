@@ -215,7 +215,7 @@ setInterval(() => {
         if (games.length > 0) {
             chrome.runtime.sendMessage({ type: "alert" });
             createAudio();
-            document.getElementById('audio_player').play();
+            document.getElementById('audio_player').play().catch(() => { });
         }
     });
 }, 1000);
