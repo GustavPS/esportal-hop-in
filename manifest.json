@@ -1,14 +1,12 @@
 {
     "name": "Esportal Hop-in",
     "description": "Show an alert when a game is available for hop-in",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "manifest_version": 3,
     "background": {
         "service_worker": "background.js"
     },
     "permissions": [
-        "webRequest",
-        "tabs"
     ],
     "content_scripts": [{
         "css": ["styles.css"],

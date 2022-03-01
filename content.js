@@ -81,6 +81,26 @@ const getMatchDetails = (id) => {
     });
 }
 
+const getUsername = () => {
+    try {
+        return document.querySelector('.top-bar-user').innerText;
+    } catch (e) {
+        console.warn("No username found, will always search for games");
+        return null;
+    }
+}
+
+const isInGame = (username) => {
+    return new Promise((resolve, reject) => {
+        const currentTime = Date.now();
+        fetch(`https://esportal.com/api/user_profile/get?_=${currentTime}&username=${username}&current_match=1`)
+            .then(response => response.json())
+            .then(data => {
+                resolve(data.current_match.id !== null);
+            });
+    });
+}
+
 const getActiveGames = () => {
     return new Promise((resolve, reject) => {
         const currentTime = Date.now();
@@ -162,27 +182,6 @@ const createPopup = (game) => {
     `;
     return popup;
 }
-/*
-<div id="snackbar">
-    <div class="snack">
-        <div class="snack-close">
-            <i class="far fa-times-circle"></i>
-        </div>
-        <div class="snack-logo">
-            <a class="table-avatar avatar circle premium" href="/sv/profile/30SlakOfficial" style="background-image: url(&quot;https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/4c/4c1b64788f893f15677e81861e00de571060e087_medium.jpg&quot;);"></a>
-        </div>
-        <div class="snack-body">
-            <div class="snack-title">Vän gick med en Gather</div>
-            <div class="snack-content">
-                <span><a href="/sv/profile/30SlakOfficial">30SlakOfficial</a> har joinat en gather.</span>
-            </div>
-            <div class="snack-friend-request-actions">
-                <span class="button button-new-style accept">Gå med här</span>
-            </div>
-        </div>
-    </div>
-</div>
-*/
 
 const createAudio = () => {
     if (document.getElementById('audioDiv') == null) {
@@ -205,17 +204,24 @@ const createEventListeners = (game, popup) => {
     });
 }
 
-setInterval(() => {
-    getActiveGames().then(games => {
-        for (const game of games) {
-            const popup = createPopup(game);
-            document.body.appendChild(popup);
-            createEventListeners(game, popup);
-        }
-        if (games.length > 0) {
-            chrome.runtime.sendMessage({ type: "alert" });
-            createAudio();
-            document.getElementById('audio_player').play().catch(() => { });
-        }
-    });
+const username = getUsername();
+const foundUsername = username !== null;
+
+setInterval(async () => {
+    const userInGame = foundUsername ? await isInGame(username) : false;
+
+    if (!userInGame) {
+        getActiveGames().then(games => {
+            for (const game of games) {
+                const popup = createPopup(game);
+                document.body.appendChild(popup);
+                createEventListeners(game, popup);
+            }
+            if (games.length > 0) {
+                chrome.runtime.sendMessage({ type: "alert" });
+                createAudio();
+                document.getElementById('audio_player').play().catch(() => { });
+            }
+        });
+    }
 }, 1000);
