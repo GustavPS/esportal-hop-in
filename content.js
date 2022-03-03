@@ -68,7 +68,11 @@ const testData = {
 }
 
 const useTestData = false;
-const games = [];
+
+/*
+    id, popup
+*/
+const gamesFound = []
 
 const getMatchDetails = (id) => {
     return new Promise(resolve => {
@@ -101,6 +105,20 @@ const isInGame = (username) => {
     });
 }
 
+const removeOldPopups = (newGames) => {
+
+    for (const oldGame of gamesFound) {
+        const remove = newGames.findIndex(el => el.id === oldGame.id && (el.slots_open == undefined || el.slots_open === 0)) !== -1 ||
+            newGames.findIndex(el => el.id === oldGame.id) === -1;
+
+        if (remove) {
+            console.log(`Removing game ${oldGame.id}, no longer available`);
+            oldGame.popup.remove();
+            gamesFound.splice(gamesFound.indexOf(oldGame), 1);
+        }
+    }
+}
+
 const getActiveGames = () => {
     return new Promise((resolve, reject) => {
         const currentTime = Date.now();
@@ -109,16 +127,14 @@ const getActiveGames = () => {
             .then(async (data) => {
                 const availableGames = [];
                 if (useTestData) {
-                    if (games.length == 0) {
+                    if (gamesFound.length == 0) {
                         availableGames.push(testData);
-                        games.push(testData.id);
                     }
                 } else {
                     for (const game of data) {
-                        if (game.slots_open !== undefined && game.slots_open !== 0 && !isMatchCurrentPage(game.id) && !games.includes(game.id)) {
+                        if (game.slots_open !== undefined && game.slots_open !== 0 && !isMatchCurrentPage(game.id) && gamesFound.findIndex(el => el.id === game.id) === -1) {
                             game.match = await getMatchDetails(game.id);
                             availableGames.push(game);
-                            games.push(game.id);
                         }
                     }
                 }
@@ -127,6 +143,8 @@ const getActiveGames = () => {
                     console.log(availableGames);
                 }
                 console.log(`Found ${availableGames.length} available games out of ${data.length}`);
+
+                removeOldPopups(data);
                 resolve(availableGames);
             });
     });
@@ -246,7 +264,7 @@ const username = getUsername();
 const foundUsername = username !== null;
 
 createAudioSetting().then(audioDiv => {
-    insertAudioSetting(audioDiv)    
+    insertAudioSetting(audioDiv)
 });
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -264,6 +282,11 @@ setInterval(async () => {
                 const popup = createPopup(game);
                 document.body.appendChild(popup);
                 createEventListeners(game, popup);
+
+                gamesFound.push({
+                    id: game.id,
+                    popup: popup
+                });
             }
             if (games.length > 0) {
                 const soundEnabled = await isSoundEnabled();
