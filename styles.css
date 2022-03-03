@@ -98,3 +98,12 @@
     min-height: 35px;
     line-height: normal;
 }
+
+
+/* SOUND SETTINGS */
+#soundSetting span {
+    position: relative;
+    bottom: 8px;
+    margin-left: 5px;
+    font-size: 12px;
+}

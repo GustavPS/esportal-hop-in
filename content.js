@@ -122,7 +122,7 @@ const getActiveGames = () => {
                         }
                     }
                 }
-                
+
                 if (availableGames.length > 0) {
                     console.log(availableGames);
                 }
@@ -204,24 +204,76 @@ const createEventListeners = (game, popup) => {
     });
 }
 
+const isSoundEnabled = () => {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get("sound", ({ sound }) => {
+            resolve(sound);
+        });
+    });
+}
+
+const createAudioSetting = async () => {
+    const soundEnabled = await isSoundEnabled();
+    console.log(`Creating div: ${soundEnabled}`)
+
+    const audioDiv = document.createElement('div');
+    audioDiv.classList.add('audio-setting');
+    audioDiv.classList.add('top-bar-right-item')
+    audioDiv.innerHTML = `
+    <div id="soundSetting">
+        <label>
+            <input type="checkbox" id="soundCheckbox" ${soundEnabled ? "checked" : ""}>
+            <span>Pop-up sound</span>
+        </label>
+    </div>
+    `;
+    return audioDiv;
+}
+
+const insertAudioSetting = (audioDiv) => {
+    console.log(audioDiv);
+    const parent = document.getElementsByClassName('queue-timer-container')[0].parentNode;
+    const child = document.getElementsByClassName('queue-timer-container')[0];
+    parent.insertBefore(audioDiv, child);
+
+    document.getElementById('soundCheckbox').addEventListener('change', () => {
+        const sound = document.getElementById('soundCheckbox').checked;
+        chrome.storage.sync.set({ sound });
+    });
+};
+
 const username = getUsername();
 const foundUsername = username !== null;
+
+createAudioSetting().then(audioDiv => {
+    insertAudioSetting(audioDiv)    
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (changes.sound) {
+        document.getElementById('soundCheckbox').checked = changes.sound.newValue;
+    }
+});
 
 setInterval(async () => {
     const userInGame = foundUsername ? await isInGame(username) : false;
 
     if (!userInGame) {
-        getActiveGames().then(games => {
+        getActiveGames().then(async (games) => {
             for (const game of games) {
                 const popup = createPopup(game);
                 document.body.appendChild(popup);
                 createEventListeners(game, popup);
             }
             if (games.length > 0) {
-                chrome.runtime.sendMessage({ type: "alert" });
-                createAudio();
-                document.getElementById('audio_player').play().catch(() => { });
+                const soundEnabled = await isSoundEnabled();
+                if (soundEnabled) {
+                    chrome.runtime.sendMessage({ type: "alert" });
+                    createAudio();
+                    document.getElementById('audio_player').play().catch(() => { });
+                }
             }
         });
     }
 }, 1000);
+

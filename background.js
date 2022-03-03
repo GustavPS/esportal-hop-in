@@ -6,3 +6,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     }
 });
+
+chrome.runtime.onInstalled.addListener(() => {
+    // Default sound on
+    const sound = true;
+    chrome.storage.sync.set({ sound });
+});

@@ -1,0 +1,19 @@
+.wrapper {
+    min-width: 100px;
+}
+
+.sound {
+    display: inline-flex;
+}
+
+.title {
+    color: gray;
+    text-align: center;
+}
+
+hr {
+    height: 1px;
+    background-color: #ccc;
+    border: none;
+    margin-bottom: 10px;
+}
