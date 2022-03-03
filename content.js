@@ -72,7 +72,8 @@ const useTestData = false;
 /*
     id, popup
 */
-const gamesFound = []
+const gamesFound = [];
+const gamesIgnored = []; // Declined games
 
 const getMatchDetails = (id) => {
     return new Promise(resolve => {
@@ -105,8 +106,12 @@ const isInGame = (username) => {
     });
 }
 
+/**
+ * Remove old games that was found
+ * 
+ * @param {array} newGames 
+ */
 const removeOldPopups = (newGames) => {
-
     for (const oldGame of gamesFound) {
         const remove = newGames.findIndex(el => el.id === oldGame.id && (el.slots_open == undefined || el.slots_open === 0)) !== -1 ||
             newGames.findIndex(el => el.id === oldGame.id) === -1;
@@ -119,6 +124,28 @@ const removeOldPopups = (newGames) => {
     }
 }
 
+/**
+ * Remove old games that has been ignored
+ * 
+ * @param {array} newGames 
+ */
+const removeOldIgnoredGames = (newGames) => {
+    for (const ignored of gamesIgnored) {
+        const remove = newGames.findIndex(el => el.id === ignored.id && (el.slots_open == undefined || el.slots_open === 0)) !== -1 ||
+            newGames.findIndex(el => el.id === ignored.id) === -1;
+
+        if (remove) {
+            console.log(`Removing ignored game ${ignored.id}, no longer available`);
+            gamesIgnored.splice(gamesIgnored.indexOf(ignored), 1);
+        }
+    }
+}
+
+/**
+ * Get all active games that are joinable
+ * 
+ * @returns {array} - Array of games
+ */
 const getActiveGames = () => {
     return new Promise((resolve, reject) => {
         const currentTime = Date.now();
@@ -145,6 +172,7 @@ const getActiveGames = () => {
                 console.log(`Found ${availableGames.length} available games out of ${data.length}`);
 
                 removeOldPopups(data);
+                removeOldIgnoredGames(data);
                 resolve(availableGames);
             });
     });
@@ -212,9 +240,11 @@ const createAudio = () => {
     }
 }
 
-const createEventListeners = (game, popup) => {
+const createEventListeners = (game, popup, wrapper) => {
     document.querySelector(`#game-${game.id} #close`).addEventListener('click', () => {
-        document.body.removeChild(popup);
+        wrapper.removeChild(popup);
+        gamesIgnored.push(game);
+        updateCurrentAmountOfGames(gamesFound.length - gamesIgnored.length, wrapper);
     });
 
     document.querySelector(`#game-${game.id} .accept`).addEventListener('click', () => {
@@ -232,7 +262,6 @@ const isSoundEnabled = () => {
 
 const createAudioSetting = async () => {
     const soundEnabled = await isSoundEnabled();
-    console.log(`Creating div: ${soundEnabled}`)
 
     const audioDiv = document.createElement('div');
     audioDiv.classList.add('audio-setting');
@@ -249,7 +278,6 @@ const createAudioSetting = async () => {
 }
 
 const insertAudioSetting = (audioDiv) => {
-    console.log(audioDiv);
     const parent = document.getElementsByClassName('queue-timer-container')[0].parentNode;
     const child = document.getElementsByClassName('queue-timer-container')[0];
     parent.insertBefore(audioDiv, child);
@@ -260,12 +288,34 @@ const insertAudioSetting = (audioDiv) => {
     });
 };
 
+const createPopupWrapper = () => {
+    const popupWrapper = document.createElement('div');
+    popupWrapper.classList.add('popup-wrapper');
+    popupWrapper.innerHTML = `
+        <p id="numberOfHopInGames"></p>
+    `;
+    return popupWrapper;
+}
+
+const updateCurrentAmountOfGames = (amount, wrapper) => {
+    const currentAmount = wrapper.querySelector('#numberOfHopInGames');
+    if (amount > 0) {
+        currentAmount.innerText = amount;
+        currentAmount.style.display = 'block';
+    } else {
+        currentAmount.style.display = 'none';
+    }
+}
+
 const username = getUsername();
 const foundUsername = username !== null;
 
 createAudioSetting().then(audioDiv => {
     insertAudioSetting(audioDiv)
 });
+
+const wrapper = createPopupWrapper();
+document.body.appendChild(wrapper);
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (changes.sound) {
@@ -280,8 +330,8 @@ setInterval(async () => {
         getActiveGames().then(async (games) => {
             for (const game of games) {
                 const popup = createPopup(game);
-                document.body.appendChild(popup);
-                createEventListeners(game, popup);
+                wrapper.appendChild(popup);
+                createEventListeners(game, popup, wrapper);
 
                 gamesFound.push({
                     id: game.id,
@@ -296,6 +346,8 @@ setInterval(async () => {
                     document.getElementById('audio_player').play().catch(() => { });
                 }
             }
+
+            updateCurrentAmountOfGames(gamesFound.length - gamesIgnored.length, wrapper);
         });
     }
 }, 1000);
