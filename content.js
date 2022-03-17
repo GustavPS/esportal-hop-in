@@ -87,8 +87,11 @@ const getMatchDetails = (id) => {
 }
 
 const getUsername = () => {
+    const regex = /\/profile\/(.+)/
     try {
-        return document.querySelector('.top-bar-user').innerText;
+        const profileLink = document.querySelector('.top-bar-profile .top-bar-dropdown .top-bar-item').href;
+        const matches = profileLink.match(regex);
+        return matches[1];
     } catch (e) {
         console.warn("No username found, will always search for games");
         return null;
