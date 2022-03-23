@@ -353,5 +353,5 @@ setInterval(async () => {
             updateCurrentAmountOfGames(gamesFound.length - gamesIgnored.length, wrapper);
         });
     }
-}, 1000);
+}, 5000);
 
